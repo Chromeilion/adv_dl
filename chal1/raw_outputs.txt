@@ -1,0 +1,171 @@
+---------------------------------
+
+# pca_train.py:
+
+NMI: 0.5215748677703529
+ARI: 0.35852345286574916
+SVM scores on kmeans test set:
+               precision    recall  f1-score   support
+
+           0       0.90      1.00      0.95        70
+           1       0.96      0.96      0.96       115
+           2       0.98      0.96      0.97       159
+           3       0.96      0.95      0.95        75
+           4       0.96      0.99      0.97        88
+           5       0.90      0.98      0.94       163
+           6       0.99      0.86      0.92        80
+           7       0.93      0.95      0.94       133
+           8       0.97      0.81      0.88        36
+           9       0.95      0.86      0.90        81
+
+    accuracy                           0.94      1000
+   macro avg       0.95      0.93      0.94      1000
+weighted avg       0.95      0.94      0.94      1000
+
+SVM NMI: 0.5433310677223904
+ARI: 0.36869130832395425
+MLP 1 scores on kmeans test set:
+               precision    recall  f1-score   support
+
+           0       0.97      1.00      0.99        70
+           1       0.94      0.93      0.93       115
+           2       0.98      0.99      0.98       159
+           3       0.99      0.97      0.98        75
+           4       0.99      0.92      0.95        88
+           5       0.95      1.00      0.98       163
+           6       1.00      0.96      0.98        80
+           7       0.94      0.98      0.96       133
+           8       1.00      0.83      0.91        36
+           9       0.97      0.95      0.96        81
+
+    accuracy                           0.97      1000
+   macro avg       0.97      0.95      0.96      1000
+weighted avg       0.97      0.97      0.97      1000
+
+MLP NMI: 0.5292174831786313
+ARI: 0.3540979474366837
+MLP 2 scores on kmeans test set:
+               precision    recall  f1-score   support
+
+           0       0.96      0.99      0.97        70
+           1       0.94      0.92      0.93       115
+           2       0.97      0.99      0.98       159
+           3       0.97      0.99      0.98        75
+           4       0.98      0.94      0.96        88
+           5       0.96      0.98      0.97       163
+           6       0.99      0.93      0.95        80
+           7       0.93      0.97      0.95       133
+           8       0.97      0.81      0.88        36
+           9       0.95      0.96      0.96        81
+
+    accuracy                           0.96      1000
+   macro avg       0.96      0.95      0.95      1000
+weighted avg       0.96      0.96      0.96      1000
+
+MLP 2 NMI: 0.5212803314778479
+ARI: 0.3478769128750351
+Epoch: 100%|██████████| 50/50 [00:43<00:00,  1.16it/s]
+CNN scores on kmeans test set:               precision    recall  f1-score   support
+
+           0       0.97      0.96      0.96        71
+           1       0.94      0.91      0.92       119
+           2       0.98      0.98      0.98       159
+           3       0.93      0.97      0.95        72
+           4       0.92      0.99      0.95        82
+           5       0.98      0.95      0.96       167
+           6       0.93      0.97      0.95        76
+           7       0.98      0.92      0.95       141
+           8       0.81      0.94      0.87        31
+           9       0.95      0.94      0.94        82
+
+    accuracy                           0.95      1000
+   macro avg       0.94      0.95      0.94      1000
+weighted avg       0.95      0.95      0.95      1000
+
+CNN NMI: 0.5265073192621055
+ARI: 0.3465443464604873
+
+Process finished with exit code 0
+
+---------------------------------
+
+# sup_train.py:
+
+SVM scores on kmeans test set:
+               precision    recall  f1-score   support
+
+           0       0.83      0.86      0.84      1202
+           1       0.99      0.97      0.98      1219
+           2       0.83      0.83      0.83      1205
+           3       0.86      0.92      0.89      1184
+           4       0.82      0.85      0.83      1202
+           5       0.97      0.96      0.96      1211
+           6       0.75      0.66      0.71      1218
+           7       0.94      0.96      0.95      1159
+           8       0.95      0.97      0.96      1197
+           9       0.97      0.96      0.96      1203
+
+    accuracy                           0.89     12000
+   macro avg       0.89      0.89      0.89     12000
+weighted avg       0.89      0.89      0.89     12000
+
+MLP 1 scores on kmeans test set:
+               precision    recall  f1-score   support
+
+           0       0.83      0.84      0.84      1202
+           1       0.96      0.98      0.97      1219
+           2       0.85      0.77      0.81      1205
+           3       0.88      0.89      0.89      1184
+           4       0.80      0.82      0.81      1202
+           5       0.96      0.95      0.95      1211
+           6       0.70      0.70      0.70      1218
+           7       0.92      0.95      0.93      1159
+           8       0.96      0.96      0.96      1197
+           9       0.95      0.94      0.95      1203
+
+    accuracy                           0.88     12000
+   macro avg       0.88      0.88      0.88     12000
+weighted avg       0.88      0.88      0.88     12000
+
+MLP 2 scores on kmeans test set:
+               precision    recall  f1-score   support
+
+           0       0.84      0.84      0.84      1202
+           1       0.99      0.97      0.98      1219
+           2       0.82      0.80      0.81      1205
+           3       0.85      0.91      0.88      1184
+           4       0.83      0.81      0.82      1202
+           5       0.96      0.95      0.96      1211
+           6       0.71      0.73      0.72      1218
+           7       0.93      0.95      0.94      1159
+           8       0.97      0.94      0.95      1197
+           9       0.96      0.94      0.95      1203
+
+    accuracy                           0.88     12000
+   macro avg       0.89      0.89      0.89     12000
+weighted avg       0.89      0.88      0.89     12000
+
+/home/chromeilion/Code/Uni/uni2025w/adv_dl/chal1/sup_train.py:113: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  self.y = torch.tensor(y).long().to(device)
+Epoch: 100%|██████████| 50/50 [02:10<00:00,  2.61s/it]
+CNN scores on test set:               precision    recall  f1-score   support
+
+           0       0.88      0.85      0.86      1243
+           1       0.97      1.00      0.98      1177
+           2       0.81      0.89      0.85      1089
+           3       0.93      0.87      0.90      1261
+           4       0.85      0.84      0.84      1227
+           5       0.98      0.98      0.98      1214
+           6       0.77      0.75      0.76      1256
+           7       0.98      0.94      0.96      1212
+           8       0.96      0.99      0.98      1169
+           9       0.94      0.98      0.96      1152
+
+    accuracy                           0.91     12000
+   macro avg       0.91      0.91      0.91     12000
+weighted avg       0.91      0.91      0.91     12000
+
+
+Process finished with exit code 0
+
+---------------------------------
