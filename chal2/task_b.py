@@ -3,9 +3,12 @@ import matplotlib.pyplot as plt
 import torch
 import  torch.nn as nn
 from torch.utils.data import Dataset
-from torch.multiprocessing import set_start_method
 from tqdm import tqdm
+import torch._dynamo
 
+# In case the GPU we are using is old don't error when compiling the model.
+# The compiler will simply fall back to eager mode.
+torch._dynamo.config.suppress_errors = True
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 seed = 42
@@ -69,7 +72,8 @@ def train_model(model, optimargs, epochs: int, train_ds,
                 test_ds, batch_size: int = 128, eval_every: int = 500):
     model = model.to(device)
     # Compiling the model speeds it up a lot because of the sequential nature
-    # of the residual blocks (essentially a for loop), which gets removed.
+    # of the residual blocks. Essentially the entire chain of residual
+    # blocks can be done at once by fusing the kernels.
     model = torch.compile(model, mode="reduce-overhead")
     criterion = nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters(), **optimargs)

@@ -87,7 +87,8 @@ def train_student(student, teacher, optimargs, n_iterations: int, test_x, test_y
     test_losses = []
     for step in tqdm(range(n_iterations), total=n_iterations,
                   desc="Training student model"):
-        x, y = generate_data(teacher, batch_size)
+        with torch.no_grad():
+            x, y = generate_data(teacher, batch_size)
         logits = student(x)
         loss = criterion(logits, y)
         optimizer.zero_grad()
