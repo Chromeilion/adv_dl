@@ -379,7 +379,6 @@ class TransformerBlock(nn.Module):
             layer_id (int): Identifier for the layer.
             attention_norm (RMSNorm): Layer normalization for attention output.
             ffn_norm (RMSNorm): Layer normalization for feedforward output.
-
         """
         super().__init__()
         self.n_heads = args.n_heads
