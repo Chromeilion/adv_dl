@@ -263,7 +263,7 @@ if __name__ == '__main__':
     )
     trainer_config = TrainerConfig(
         base_lr=5e-5,
-        epochs=100,
+        epochs=150,
         gradient_clip=300,
         eval_every=500,
         save_every=500,
