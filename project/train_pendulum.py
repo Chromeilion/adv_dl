@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+from functools import partial
 
 import numpy as np
 from seft.model import SEFT, ModelConfig
@@ -9,6 +10,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import Dataset
 from pendulum_generation import generate_pendulums
+
 
 MEAN, STD = 0.002, 0.0021
 
@@ -49,30 +51,32 @@ def main(model_config, trainer_config, filepath = None, sample_rate=0.5, data_ra
     model = SEFT(config=model_config)
     model.set_loss_fn(PendulumMSELoss())
     model.set_head(PendulumHead(emb_dim=model_config.d_model))
-    trainer = Trainer(trainer_config)
-    trainer.train(train, valid, model)
-    evaluate(model, test)
 
-def evaluate(model, test):
-    model.eval()
+    model_parameters = filter(lambda p: p.requires_grad, model.parameters())
+    params = sum([np.prod(p.size()) for p in model_parameters])
+    print(f"Model has {params} parameters")
+
+    trainer = Trainer(trainer_config)
+    trainer.set_post_train_hook(partial(evaluate, test=test))
+    trainer.train(train, valid, model)
+
+
+def evaluate(model, run, test):
     test_dl = torch.utils.data.DataLoader(
         test,
         batch_size=50,
         shuffle=False,
         num_workers=os.cpu_count()-1
     )
-    device = "cuda" if torch.cuda.is_available() else "cpu"
-    model = model.to(device)
     test_loss = 0.
     for modelargs in test_dl:
-        modelargs = {key: value.to(device) for key, value in modelargs.items()}
-        _, loss = model(**modelargs)
+        modelargs = {key: value.to(model.cls.device) for key, value in modelargs.items()}
+        preds, loss = model(**modelargs)
         test_loss += loss.cpu().item()
 
-    test_loss /= len(test_dl)
-    print(test_loss) # 5.8, seems realistic
-
-
+    test_loss *= 1e-3
+    print(f"Test set loss: {test_loss}")
+    run.log({"Test MSE": test_loss})
 
 def calc_mean_std(dataset):
     """Calculate mean and std of dataset."""
@@ -98,21 +102,55 @@ class PendulumMSELoss(nn.Module):
         self.mse = nn.MSELoss(reduction="sum")
 
     def forward(self, logits, targets):
-        return self.mse(logits, targets) * 10e-3
+        return self.mse(logits["mean"], targets)
+
+
+class PendulumGaussianLoss(nn.Module):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.gaussian = nn.GaussianNLLLoss()
+        self.eps_max = 10
+        self.eps_min = 1e-5
+
+    def forward(self, logits, targets):
+        pred_mean, pred_variance = logits["mean"], logits["var"]
+        return nn.functional.mse_loss(pred_mean, targets)
+        mask = None
+        assert pred_mean.shape == targets.shape == pred_variance.shape, f'pred_mean {pred_mean.shape} targets {targets.shape} pred_variance {pred_variance.shape}'
+
+        epsilon = 1e-6 * torch.ones_like(pred_mean)
+        pred_variance = torch.maximum(pred_variance, epsilon)
+
+        if mask == None:
+            mask = torch.ones_like(pred_mean)
+
+        # sum over dimensions
+        const = np.log(2 * np.pi)
+        sample_dim_time_wise = mask * \
+            (torch.log(pred_variance) + torch.square(pred_mean - targets) / pred_variance + const)
+        sample_time_wise = 0.5 * torch.sum(sample_dim_time_wise, -1)
+
+        # mean over time steps
+        sample_wise = torch.mean(sample_time_wise, 1)
+
+        return torch.mean(sample_wise)
 
 
 class PendulumHead(nn.Module):
     def __init__(self, emb_dim: int, n_frames: int = 50, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.head = nn.Linear(emb_dim, 2)
+        self.head_mean = nn.Linear(emb_dim, 2)
+        self.head_var = nn.Linear(emb_dim, 100)
         self.n_frames = n_frames
+        self.sig = nn.Sigmoid()
 
     def forward(self, logits):
-        # drop cls token
-        logits = logits[:, 1:, :]
+        B = logits.shape[0]
+        cls, logits = logits[:, 0], logits[:, 1:]
         frames = logits.reshape(logits.shape[0], self.n_frames, -1, logits.shape[2])
         frame_means = frames.mean(dim=2).squeeze()
-        return self.head(frame_means)
+
+        return {"var": self.head_mean(frame_means), "mean": self.head_var(cls).view(B, 50, 2)}
 
 
 def collate_fn(batch):
@@ -251,25 +289,27 @@ def subsample(data, sample_rate, imagepred=False, random_state=0):
 
 if __name__ == '__main__':
     model_config = ModelConfig(
-        d_model=384,
-        nhead=4,
+        d_model=72,
+        nhead=2,
+        dim_feedforward=72*4,
         depth=4,
-        tubelet_size=(1, 8, 8),
-        max_len=10000,
+        tubelet_size=(1, 24, 24),
         head_drop_rate=0.,
         attn_drop_rate=0.,
         drop_path_rate=0.,
-        drop_rate=0.
+        drop_rate=0.,
+        pos_encoding="relative"
     )
     trainer_config = TrainerConfig(
-        base_lr=5e-5,
-        epochs=150,
-        gradient_clip=300,
+        base_lr=2e-5,
+        epochs=200,
         eval_every=500,
+        gradient_clip=None,
         save_every=500,
         batch_size=32,
         warmup_steps=1000,
         optimizer="adamw",
+        run_name="pendulum_regression_relative",
         project_name="pendulum_regression"
     )
     main(model_config, trainer_config)
